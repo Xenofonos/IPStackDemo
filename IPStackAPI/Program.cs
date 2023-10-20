@@ -29,7 +29,6 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.Configure<LibrarySettings>(builder.Configuration.GetSection("LibrarySettings"));
 var IpInfoSettings = builder.Configuration.GetSection(nameof(LibrarySettings)).Get<LibrarySettings>();
 builder.Services.AddTransient(sp => new IPInfoProvider(new HttpClient(), IpInfoSettings.HostName, IpInfoSettings.ApiKey) );
-//{ hostName = IpInfoSettings.HostName, apiKey = IpInfoSettings.ApiKey }
 
 var app = builder.Build();
 

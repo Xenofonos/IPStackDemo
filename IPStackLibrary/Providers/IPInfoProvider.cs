@@ -18,9 +18,6 @@ namespace IPStackLibrary.Providers
         private readonly string hostName;
         private readonly string apiKey;
 
-        //public string? hostName;
-        //public string? apiKey;
-
         public IPInfoProvider(HttpClient httpClient, string hostName, string apiKey)
         {
             if (string.IsNullOrEmpty(hostName))
