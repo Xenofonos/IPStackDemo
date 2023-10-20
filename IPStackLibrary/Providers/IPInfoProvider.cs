@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Json;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Net.Http.Json;
 using IPStackLibrary.Models;
-using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Microsoft.Extensions.Options;
+using System.Text.Json;
 
 namespace IPStackLibrary.Providers
 {
@@ -39,11 +31,39 @@ namespace IPStackLibrary.Providers
         {
             var request = new HttpRequestMessage(HttpMethod.Get, $"{hostName}{ip}?access_key={apiKey}");
             var response = await httpClient.SendAsync(request);
-            var detailsResponse = await response.Content.ReadFromJsonAsync<IPDetails>();
-
-            if (detailsResponse is not null && detailsResponse.Ip is not null)
+            if (response.IsSuccessStatusCode)
             {
-                return detailsResponse;
+                try
+                {
+                    string responseContent = await response.Content.ReadAsStringAsync();
+
+                    using (JsonDocument doc = JsonDocument.Parse(responseContent))
+                    {
+                        if (doc.RootElement.TryGetProperty("ip", out _))
+                        {
+                            // This is the format with IP information
+                            // Process the data accordingly
+                            return await response.Content.ReadFromJsonAsync<IPDetails>() ?? throw new Exception("IPServiceNotAvailableException");
+                        }
+                        else if (doc.RootElement.TryGetProperty("error", out _))
+                        {
+                            // This is the error format
+                            // Handle the error data
+                            throw new Exception("IPServiceNotAvailableException");
+                        }
+                        else
+                        {
+                            // Neither format was detected
+                            // Handle unexpected response
+                            throw new Exception("IPServiceNotAvailableException");
+                        }
+                    }
+                }
+                catch (JsonException)
+                {
+                    // JSON parsing failed, handle this error
+                    throw new Exception("IPServiceNotAvailableException");
+                }
             }
             else
             {
