@@ -1,5 +1,4 @@
 using IPStack.API.DbContexts;
-using IPStack.API.Models;
 using IPStack.API.Services;
 using IPStackLibrary.Providers;
 using Microsoft.EntityFrameworkCore;
@@ -25,8 +24,6 @@ builder.Services.AddDbContext<IPStackContext>(
 builder.Services.AddScoped<IIPDetailsRepository, IPDetailsRepository>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
-builder.Services.Configure<LibrarySettings>(builder.Configuration.GetSection("LibrarySettings"));
 
 var app = builder.Build();
 
