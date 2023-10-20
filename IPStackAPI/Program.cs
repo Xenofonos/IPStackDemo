@@ -1,4 +1,5 @@
 using IPStack.API.DbContexts;
+using IPStack.API.Models;
 using IPStack.API.Services;
 using IPStackLibrary.Providers;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +16,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddMemoryCache();
 
-builder.Services.AddHttpClient<IPInfoProvider>();
+//builder.Services.AddHttpClient<IPInfoProvider>();
 
 builder.Services.AddDbContext<IPStackContext>(
     dbContextOptions => dbContextOptions.UseSqlite(
@@ -24,6 +25,11 @@ builder.Services.AddDbContext<IPStackContext>(
 builder.Services.AddScoped<IIPDetailsRepository, IPDetailsRepository>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+builder.Services.Configure<LibrarySettings>(builder.Configuration.GetSection("LibrarySettings"));
+var IpInfoSettings = builder.Configuration.GetSection(nameof(LibrarySettings)).Get<LibrarySettings>();
+builder.Services.AddTransient(sp => new IPInfoProvider(new HttpClient(), IpInfoSettings.HostName, IpInfoSettings.ApiKey) );
+//{ hostName = IpInfoSettings.HostName, apiKey = IpInfoSettings.ApiKey }
 
 var app = builder.Build();
 

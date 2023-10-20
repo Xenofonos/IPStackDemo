@@ -15,15 +15,32 @@ namespace IPStackLibrary.Providers
     public class IPInfoProvider : IIPInfoProvider
     {
         private readonly HttpClient httpClient;
+        private readonly string hostName;
+        private readonly string apiKey;
 
-        public IPInfoProvider(HttpClient httpClient)
+        //public string? hostName;
+        //public string? apiKey;
+
+        public IPInfoProvider(HttpClient httpClient, string hostName, string apiKey)
         {
-            this.httpClient = httpClient;
+            if (string.IsNullOrEmpty(hostName))
+            {
+                throw new ArgumentException($"'{nameof(hostName)}' cannot be null or empty.", nameof(hostName));
+            }
+
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                throw new ArgumentException($"'{nameof(apiKey)}' cannot be null or empty.", nameof(apiKey));
+            }
+
+            this.httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            this.hostName = hostName;
+            this.apiKey = apiKey;
         }
 
         public async Task<IPDetails> GetDetails(string ip)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, $"http://api.ipstack.com/{ip}?access_key=3108de2b12844c839c6066fad9c656da");
+            var request = new HttpRequestMessage(HttpMethod.Get, $"{hostName}{ip}?access_key={apiKey}");
             var response = await httpClient.SendAsync(request);
             var detailsResponse = await response.Content.ReadFromJsonAsync<IPDetails>();
 
