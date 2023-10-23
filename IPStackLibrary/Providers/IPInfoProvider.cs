@@ -7,29 +7,18 @@ namespace IPStackLibrary.Providers
     public class IPInfoProvider : IIPInfoProvider
     {
         private readonly HttpClient httpClient;
-        private readonly string hostName;
-        private readonly string apiKey;
+        private readonly ILibraryConfiguration configuration;
 
-        public IPInfoProvider(HttpClient httpClient, string hostName, string apiKey)
+        public IPInfoProvider(HttpClient httpClient, ILibraryConfiguration configuration)
         {
-            if (string.IsNullOrEmpty(hostName))
-            {
-                throw new ArgumentException($"'{nameof(hostName)}' cannot be null or empty.", nameof(hostName));
-            }
-
-            if (string.IsNullOrEmpty(apiKey))
-            {
-                throw new ArgumentException($"'{nameof(apiKey)}' cannot be null or empty.", nameof(apiKey));
-            }
-
             this.httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-            this.hostName = hostName;
-            this.apiKey = apiKey;
+            this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
         public async Task<IPDetails> GetDetails(string ip)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, $"{hostName}{ip}?access_key={apiKey}");
+            var request = new HttpRequestMessage(HttpMethod.Get, 
+                $"{configuration.GetBaseUrl()}{ip}?access_key={configuration.GetApiKey()}");
             var response = await httpClient.SendAsync(request);
             if (response.IsSuccessStatusCode)
             {
@@ -43,7 +32,8 @@ namespace IPStackLibrary.Providers
                         {
                             // This is the format with IP information
                             // Process the data accordingly
-                            return await response.Content.ReadFromJsonAsync<IPDetails>() ?? throw new Exception("IPServiceNotAvailableException");
+                            return await response.Content.ReadFromJsonAsync<IPDetails>() ?? 
+                                throw new Exception("IPServiceNotAvailableException");
                         }
                         else if (doc.RootElement.TryGetProperty("error", out _))
                         {

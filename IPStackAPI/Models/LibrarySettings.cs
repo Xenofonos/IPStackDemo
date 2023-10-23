@@ -2,7 +2,7 @@
 {
     public class LibrarySettings
     {
-        public string HostName { get; set; }
-        public string ApiKey { get; set; }
+        public string HostName { get; init; } = string.Empty;
+        public string ApiKey { get; init; } = string.Empty;
     }
 }
